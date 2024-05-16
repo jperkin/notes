@@ -1,4 +1,4 @@
-# GCC defining __STDC_VERSION__ in C++ code
+## GCC defining __STDC_VERSION__ in C++ code
 
 GCC on illumos behaves differently compared to other platforms, specifically in
 regards to defining `__STDC_VERSION__` in the pre-processor whilst running in
@@ -8,7 +8,7 @@ This is done here:
 
 <https://github.com/gcc-mirror/gcc/blob/releases/gcc-13.2.0/gcc/config/sol2.h#L97-L112>
 
-## Problem
+### Problem
 
 This can cause problems in third-party code which assumes that if
 `__STDC_VERSION__` is defined then the code in question must be C, not C++.
@@ -43,7 +43,7 @@ scipy/optimize/_highs/_highs_wrapper.so.p/_highs_wrapper.cpp:1619:35: error: 'at
       |                                   ^~~~~~~~~~
 ```
 
-## Workaround
+### Workaround
 
 A workaround is to change all third-party code from:
 
@@ -61,7 +61,7 @@ and that is indeed enough to at least fix the scipy build shown above, but this
 is tedious to perform across multiple third-party packages, and would require
 continued maintenance into the future.
 
-## Fix
+### Fix
 
 Let's instead try to remove the offending code from GCC itself.
 
