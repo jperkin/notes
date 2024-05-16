@@ -61,10 +61,41 @@ and that is indeed enough to at least fix the scipy build shown above, but this
 is tedious to perform across multiple third-party packages, and would require
 continued maintenance into the future.
 
-### Fix
+### Proposed Fixes
 
-Let's instead try to remove the offending code from GCC itself.
+#### Remove __STDC_VERSION__
+
+This completely removes the `__STDC_VERSION__` defines from GCC when in C++ mode:
 
 <https://github.com/TritonDataCenter/pkgsrc-extra/commit/500d3d50f26538c4b57810f35986f4a181753a3b>
 
-This is currently running through a bulk build to see if there is any fallout.
+Unfortunately this almost immediately causes fallout, when attempting to build
+cmake:
+
+```
+[ 58%] Building CXX object Source/CMakeFiles/CMakeLib.dir/cmFindProgramCommand.cxx.o
+/home/pbulk/build/devel/cmake/work/cmake-3.29.3/Source/cmFileCommand.cxx: In member function 'bool {anonymous}::cURLProgressHelper::UpdatePercentage({anonymous}::cm_curl_off_t, {anonymous}::cm_curl_off_t, std::string&)':
+/home/pbulk/build/devel/cmake/work/cmake-3.29.3/Source/cmFileCommand.cxx:1746:38: error: 'lround' is not a member of 'std'; did you mean 'lround'?
+ 1746 |       this->CurrentPercentage = std::lround(
+      |                                      ^~~~~~
+In file included from /usr/include/math.h:36,
+                 from /opt/local/gcc13/include/c++/13.2.0/bits/std_abs.h:40,
+                 from /opt/local/gcc13/include/c++/13.2.0/cstdlib:81,
+                 from /opt/local/gcc13/include/c++/13.2.0/ext/string_conversions.h:43,
+                 from /opt/local/gcc13/include/c++/13.2.0/bits/basic_string.h:4097,
+                 from /opt/local/gcc13/include/c++/13.2.0/string:54,
+                 from /home/pbulk/build/devel/cmake/work/cmake-3.29.3/Source/cmFileCommand.h:7,
+                 from /home/pbulk/build/devel/cmake/work/cmake-3.29.3/Source/cmFileCommand.cxx:3:
+/usr/include/iso/math_c99.h:238:17: note: 'lround' declared here
+  238 | extern long int lround(double);
+      |                 ^~~~~~
+```
+
+The problem is that `sys/feature_tests.h` checks for `__STDC_VERSION__`, and
+sets the internal `_STDC_C99` or `_STDC_C11` defines accordingly.  These are
+then used throughout the system headers, and in this case means that lround in
+`iso/math_c99.h` is not exposed.
+
+#### Define _STDC_C99 / _STDC_C11 directly
+
+In progress.
