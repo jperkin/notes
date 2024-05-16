@@ -67,7 +67,33 @@ continued maintenance into the future.
 
 This completely removes the `__STDC_VERSION__` defines from GCC when in C++ mode:
 
-<https://github.com/TritonDataCenter/pkgsrc-extra/commit/500d3d50f26538c4b57810f35986f4a181753a3b>
+```diff
+--- gcc/config/sol2.h.orig	2023-08-04 21:07:54.000000000 +0000
++++ gcc/config/sol2.h
+@@ -95,22 +95,6 @@ along with GCC; see the file COPYING3.
+        library.  */					\
+     if (c_dialect_cxx ())				\
+       {							\
+-	switch (cxx_dialect)				\
+-	  {						\
+-	  case cxx98:					\
+-	  case cxx11:					\
+-	  case cxx14:					\
+-	    /* C++11 and C++14 are based on C99.	\
+-	       libstdc++ makes use of C99 features	\
+-	       even for C++98.  */			\
+-	    builtin_define ("__STDC_VERSION__=199901L");\
+-	    break;					\
+-							\
+-	  default:					\
+-	    /* C++17 is based on C11.  */		\
+-	    builtin_define ("__STDC_VERSION__=201112L");\
+-	    break;					\
+-	  }						\
+ 	builtin_define ("_XOPEN_SOURCE=600");		\
+ 	builtin_define ("_LARGEFILE_SOURCE=1");		\
+ 	builtin_define ("_LARGEFILE64_SOURCE=1");	\
+```
 
 Unfortunately this almost immediately causes fallout, when attempting to build
 cmake:
@@ -97,5 +123,25 @@ then used throughout the system headers, and in this case means that lround in
 `iso/math_c99.h` is not exposed.
 
 #### Define _STDC_C99 / _STDC_C11 directly
+
+```diff
+--- gcc/config/sol2.h.orig	2023-08-04 21:07:54.000000000 +0000
++++ gcc/config/sol2.h
+@@ -103,12 +103,12 @@ along with GCC; see the file COPYING3.
+ 	    /* C++11 and C++14 are based on C99.	\
+ 	       libstdc++ makes use of C99 features	\
+ 	       even for C++98.  */			\
+-	    builtin_define ("__STDC_VERSION__=199901L");\
++	    builtin_define ("_STDC_C99");		\
+ 	    break;					\
+ 							\
+ 	  default:					\
+ 	    /* C++17 is based on C11.  */		\
+-	    builtin_define ("__STDC_VERSION__=201112L");\
++	    builtin_define ("_STDC_C11");		\
+ 	    break;					\
+ 	  }						\
+ 	builtin_define ("_XOPEN_SOURCE=600");		\
+```
 
 In progress.
