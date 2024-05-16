@@ -124,6 +124,12 @@ then used throughout the system headers, and in this case means that lround in
 
 #### Define _STDC_C99 / _STDC_C11 directly
 
+Rather than defining `__STDC_VERSION__`, define `_STDC_C99` and `_STDC_C11`
+directly.  While this is frowned upon in the system headers as they are tagged
+as internal, it feels reasonable to do this in the compiler in a similar manner
+to how Sun Studio defined `__C99FEATURES__`, and it shouldn't affect
+third-party software.
+
 ```diff
 --- gcc/config/sol2.h.orig	2023-08-04 21:07:54.000000000 +0000
 +++ gcc/config/sol2.h
