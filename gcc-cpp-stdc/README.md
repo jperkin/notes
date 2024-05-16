@@ -133,7 +133,7 @@ third-party software.
 ```diff
 --- gcc/config/sol2.h.orig	2023-08-04 21:07:54.000000000 +0000
 +++ gcc/config/sol2.h
-@@ -103,12 +103,12 @@ along with GCC; see the file COPYING3.
+@@ -103,12 +103,13 @@ along with GCC; see the file COPYING3.
  	    /* C++11 and C++14 are based on C99.	\
  	       libstdc++ makes use of C99 features	\
  	       even for C++98.  */			\
@@ -144,10 +144,13 @@ third-party software.
  	  default:					\
  	    /* C++17 is based on C11.  */		\
 -	    builtin_define ("__STDC_VERSION__=201112L");\
++	    builtin_define ("_STDC_C99");		\
 +	    builtin_define ("_STDC_C11");		\
  	    break;					\
  	  }						\
  	builtin_define ("_XOPEN_SOURCE=600");		\
 ```
 
-In progress.
+Note that for the C++17 or newer case that both `_STDC_C99` and `_STDC_C11`
+must be defined, as there are certain sections in the system headers that only
+check for the former.
