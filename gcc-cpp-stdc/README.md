@@ -1,7 +1,9 @@
-# GCC `__STDC_VERSION__` defines in C++ code
+# GCC defining __STDC_VERSION__ in C++ code
 
-GCC on illumos behaves differently compared to other platforms, specifically
-in regards to defining `__STDC_VERSION__` in the pre-processor in C++ mode.
+GCC on illumos behaves differently compared to other platforms, specifically in
+regards to defining `__STDC_VERSION__` in the pre-processor whilst running in
+C++ mode.
+
 This is done here:
 
 <https://github.com/gcc-mirror/gcc/blob/releases/gcc-13.2.0/gcc/config/sol2.h#L97-L112>
@@ -11,7 +13,8 @@ This is done here:
 This can cause problems in third-party code which assumes that if
 `__STDC_VERSION__` is defined then the code in question must be C, not C++.
 
-Here's an example from [cython](https://github.com/cython/cython/blob/3.0.10/Cython/Utility/MemoryView_C.c#L34-L44):
+Here's an example of third party software doing this from
+[cython](https://github.com/cython/cython/blob/3.0.10/Cython/Utility/MemoryView_C.c#L34-L44):
 
 ```c
 // For standard C/C++ atomics, get the headers first so we have ATOMIC_INT_LOCK_FREE
@@ -28,7 +31,8 @@ Here's an example from [cython](https://github.com/cython/cython/blob/3.0.10/Cyt
 ```
 
 While this code doesn't affect cython directly, it breaks the build of a
-dependency such as scipy which tries to use the C stdatomic in C++ code:
+dependency that uses it, such as scipy, which tries to use the C stdatomic in
+C++ code:
 
 ```
 [1350/1475] Compiling C++ object scipy/optimize/_highs/_highs_wrapper.so.p/meson-generated__highs_wrapper.cpp.o
@@ -41,7 +45,7 @@ scipy/optimize/_highs/_highs_wrapper.so.p/_highs_wrapper.cpp:1619:35: error: 'at
 
 ## Workaround
 
-A workaround is to change code from:
+A workaround is to change all third-party code from:
 
 ```c
 #if defined(__STDC_VERSION__) ...
@@ -53,12 +57,14 @@ to:
 #if !defined(__cplusplus) && defined(__STDC_VERSION__) ...
 ```
 
-and that is enough to at least fix the scipy build shown above, but this is
-tedious to perform across multiple third-party packages, and will continue to
-be a problem into the future.
+and that is indeed enough to at least fix the scipy build shown above, but this
+is tedious to perform across multiple third-party packages, and would require
+continued maintenance into the future.
 
 ## Fix
 
 Let's instead try to remove the offending code from GCC itself.
 
 <https://github.com/TritonDataCenter/pkgsrc-extra/commit/500d3d50f26538c4b57810f35986f4a181753a3b>
+
+This is currently running through a bulk build to see if there is any fallout.
