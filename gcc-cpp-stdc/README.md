@@ -31,8 +31,9 @@ Here's an example of third party software doing this from
 ```
 
 While this code doesn't affect cython directly, it breaks the build of a
-dependency that uses it, such as scipy, which tries to use the C stdatomic in
-C++ code:
+dependency that uses it, such as
+[scipy](https://us-central.manta.mnx.io/pkgsrc/public/reports/upstream-trunk/20240515.2249/py311-scipy-1.13.0/build.log),
+which tries to use the C stdatomic in C++ code:
 
 ```
 [1350/1475] Compiling C++ object scipy/optimize/_highs/_highs_wrapper.so.p/meson-generated__highs_wrapper.cpp.o
@@ -125,7 +126,7 @@ then used throughout the system headers, and in this case means that lround in
 #### Define _STDC_C99 / _STDC_C11 directly
 
 Rather than defining `__STDC_VERSION__`, define `_STDC_C99` and `_STDC_C11`
-directly.  While this is frowned upon in the system headers as they are tagged
+directly.  While this is frowned upon in the system headers as they are marked
 as internal, it feels reasonable to do this in the compiler in a similar manner
 to how Sun Studio defined `__C99FEATURES__`, and it shouldn't affect
 third-party software.
@@ -154,3 +155,5 @@ third-party software.
 Note that for the C++17 or newer case that both `_STDC_C99` and `_STDC_C11`
 must be defined, as there are certain sections in the system headers that only
 check for the former.
+
+This fixes the scipy build.  Further builds are ongoing.
