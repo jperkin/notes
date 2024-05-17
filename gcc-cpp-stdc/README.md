@@ -66,7 +66,8 @@ continued maintenance into the future.
 
 #### Remove __STDC_VERSION__
 
-This completely removes the `__STDC_VERSION__` defines from GCC when in C++ mode:
+This completely removes the `__STDC_VERSION__` defines from GCC when in C++
+mode, making the compiler behave the same on illumos as on other platforms:
 
 ```diff
 --- gcc/config/sol2.h.orig	2023-08-04 21:07:54.000000000 +0000
@@ -118,17 +119,19 @@ In file included from /usr/include/math.h:36,
       |                 ^~~~~~
 ```
 
-The problem is that `sys/feature_tests.h` checks for `__STDC_VERSION__`, and
+The problem is that `sys/feature_tests.h` checks for `__STDC_VERSION__` and
 sets the internal `_STDC_C99` or `_STDC_C11` defines accordingly.  These are
-then used throughout the system headers, and in this case means that lround in
-`iso/math_c99.h` is not exposed.
+then used throughout the system headers to enable features, and in this case
+means that `lround()` in `iso/math_c99.h` is not exposed.
+
+Without significant work to the illumos headers, this change is a dead end.
 
 #### Define _STDC_C99 / _STDC_C11 directly
 
 Rather than defining `__STDC_VERSION__`, define `_STDC_C99` and `_STDC_C11`
 directly.  While this is frowned upon in the system headers as they are marked
 as internal, it feels reasonable to do this in the compiler in a similar manner
-to how Sun Studio defined `__C99FEATURES__`, and it shouldn't affect
+to how Sun Studio defined `__C99FEATURES__`, and it shouldn't conflict with
 third-party software.
 
 ```diff
