@@ -159,4 +159,7 @@ Note that for the C++17 or newer case that both `_STDC_C99` and `_STDC_C11`
 must be defined, as there are certain sections in the system headers that only
 check for the former.
 
-This fixes the scipy build.  Further builds are ongoing.
+This fixes the scipy build, and in a bulk build was shown to not cause any
+regressions.  As a result this change is now being used in SmartOS pkgsrc trunk
+builds, specifically using [this commit](
+https://github.com/TritonDataCenter/pkgsrc-extra/commit/e295cdbf14a6991ff91ad6e5624ddec0f96244ca)
