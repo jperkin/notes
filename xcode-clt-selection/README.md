@@ -10,11 +10,11 @@ because every single path is littered with landmines.
 
 For example:
 
-* You can't just install an older Xcode on a newer OS, *even though it works
-  absolutely fine*, because the installer just refuses to proceed.
+* You can't just install an older Xcode on a newer OS, **even though it works
+  absolutely fine**, because the installer just refuses to proceed.
 
-* You can't use an older SDK with a newer compiler, *even though it works
-  absolutely fine*, because `xcrun` just refuses to consider it:
+* You can't use an older SDK with a newer compiler, **even though it works
+  absolutely fine**, because `xcrun` just refuses to consider it:
 
 ```
 $ xcrun --sdk macosx12.3 --show-sdk-path
@@ -36,16 +36,23 @@ document short it only considers the actual installation.
 
 ### Solution
 
-First, go to <https://xcodereleases.com> and find the latest version of Xcode
-where the default SDK matches the one you want to target.
+First, go to <https://xcodereleases.com> and find the latest version of the
+Xcode release series where the default SDK matches the one you want to target.
 
-For example, for targetting SDK 12.3, the newest version is 14.0.1.
+**HOWEVER**, note that during the initial run-up to a new version, the SDK will
+still be on the older release for the first few revisions.  **DO NOT** install
+them.
+
+For example, if you are targetting SDK 12.3, the newest version is 13.4.1, and
+not 14.0.1, as even though 14.0.1 targets SDK 12.3, it is one of the earliest
+releases in the 14.x series and has major bugs (like `ld(1)` crashing) that are
+fixed in later versions, but those have been switched to target a newer SDK.
 
 Head over to <https://github.com/XcodesOrg/xcodes/releases>, unzip the latest
 release, and use the `xcodes` CLI to install the version you want.
 
 ```
-$ ./xcodes install 14.0.1
+$ ./xcodes install 13.4.1
 ```
 
 Do not install Command Line Tools.
