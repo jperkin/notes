@@ -159,7 +159,54 @@ Note that for the C++17 or newer case that both `_STDC_C99` and `_STDC_C11`
 must be defined, as there are certain sections in the system headers that only
 check for the former.
 
-This fixes the scipy build, and in a bulk build was shown to not cause any
-regressions.  As a result this change is now being used in SmartOS pkgsrc trunk
-builds, specifically using [this commit](
-https://github.com/TritonDataCenter/pkgsrc-extra/commit/e295cdbf14a6991ff91ad6e5624ddec0f96244ca)
+This fixes the scipy build, but in a bulk build was shown to cause two
+regressions in packages that specifically use C++03 in their `va_copy()`
+handling.  This was tracked down to being due to:
+
+Unpatched:
+
+```shell
+$ echo '#include <stdarg.h>' | g++ -std=c++03 -x c++ -dM -E - | grep va_copy
+#define __va_copy(d,s) __builtin_va_copy(d,s)
+#define va_copy(d,s) __builtin_va_copy(d,s)
+```
+
+Patched:
+
+```shell
+$ echo '#include <stdarg.h>' | g++ -std=c++03 -x c++ -dM -E - | grep va_copy
+#define __va_copy(d,s) __builtin_va_copy(d,s)
+```
+
+These definitions aren't coming from the system `stdarg.h`, but from
+`/opt/local/gcc13/lib/gcc/x86_64-sun-solaris2.11/13.2.0/include/stdarg.h`.
+That file includes this section:
+
+```c
+#if !defined(__STRICT_ANSI__) || __STDC_VERSION__ + 0 >= 199900L \
+    || __cplusplus + 0 >= 201103L
+#define va_copy(d,s)    __builtin_va_copy(d,s)
+#endif
+```
+
+In order to match the historical behaviour of C++ on illumos the following
+patch is also applied:
+
+```diff
+--- gcc/ginclude/stdarg.h.orig  2024-05-24 11:43:06.932507694 +0000
++++ gcc/ginclude/stdarg.h
+@@ -52,7 +52,7 @@ typedef __builtin_va_list __gnuc_va_list
+ #define va_end(v)      __builtin_va_end(v)
+ #define va_arg(v,l)    __builtin_va_arg(v,l)
+ #if !defined(__STRICT_ANSI__) || __STDC_VERSION__ + 0 >= 199900L \
+-    || __cplusplus + 0 >= 201103L
++    || __cplusplus + 0 >= 201103L || (defined(__cplusplus) && defined(__sun))
+ #define va_copy(d,s)   __builtin_va_copy(d,s)
+ #endif
+ #define __va_copy(d,s) __builtin_va_copy(d,s)
+```
+
+These changes are now being used in SmartOS pkgsrc trunk
+builds, specifically using
+[these](https://github.com/TritonDataCenter/pkgsrc-extra/commit/e295cdbf14a6991ff91ad6e5624ddec0f96244ca)
+[commits](https://github.com/TritonDataCenter/pkgsrc-extra/commit/0880cfb5c72d83554df732682f97e56fab720662).
