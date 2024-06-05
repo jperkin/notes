@@ -39,6 +39,8 @@ $ TRIB=/work/git/tribblix-build
 $ while read args file; do
     git apply ${args/+/ } ${TRIB}/patches/${file}
   done < ${TRIB}/patches/jdk21u-jdk-21.0.3-ga.pls 
+$ git add .
+$ git commit -m "illumos: Apply Tribblix patchset for 21.0.3-ga.
 ```
 
 Cherry pick additional patches from previous branch.
