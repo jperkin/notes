@@ -60,8 +60,8 @@ Rather than looking at these compiler-generated function names, if we instead
 look at a real unique function:
 
 ```shell
-$ grep zrle_encode_tile24ble libctf.out  | wc -l
-     952
+$ grep zrle_encode_tile24ble libctf.out  | uniq -c
+ 952 libctf DEBUG: Trying to find match for vnc-enc-zrle.c/zrle_encode_tile24ble/0
 ```
 
 We can see that it maps to very closely to the total number of object files:
