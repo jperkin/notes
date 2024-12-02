@@ -23,24 +23,32 @@ origin	git@github.com:illumos/jdk.git (push)
 
 ## Creating new branch / tag
 
-Here we're using `jdk-21.0.3-ga` as an example.
+Here we're using `jdk-21.0.5-ga` as an example.
+
+Set required variables.
+
+```shell
+$ TRIB=/work/git/tribblix-build
+$ JDK_MAJOR=21
+$ JDK_BRANCH=21u5
+$ JDK_TAG=21.0.5
+```
 
 Fetch upstream branches and create new branch based off the `-ga` tag.
 
 ```shell
 $ git fetch --all
-$ git checkout -b il-jdk21u3 jdk-21.0.3-ga
+$ git checkout -b il-jdk${JDK_BRANCH} jdk-${JDK_TAG}-ga
 ```
 
 Apply Tribblix patches.
 
 ```shell
-$ TRIB=/work/git/tribblix-build
 $ while read args file; do
     git apply ${args/+/ } ${TRIB}/patches/${file}
-  done < ${TRIB}/patches/jdk21u-jdk-21.0.3-ga.pls 
+  done < ${TRIB}/patches/jdk${JDK_MAJOR}u-jdk-${JDK_TAG}-ga.pls
 $ git add .
-$ git commit -m "illumos: Apply Tribblix patchset for 21.0.3-ga.
+$ git commit -m "illumos: Apply Tribblix patchset for ${JDK_TAG}-ga."
 ```
 
 Cherry pick additional patches from previous branch.
@@ -57,7 +65,7 @@ $ git cherry-pick 5576de2510c 722de786e84
 Tag and push.
 
 ```shell
-$ git tag il-jdk-21.0.3-ga
-$ git push --set-upstream origin il-jdk21u3
+$ git tag il-jdk-${JDK_TAG}-ga
+$ git push --set-upstream origin il-jdk${JDK_BRANCH}
 $ git push --tags
 ```
